@@ -1,0 +1,316 @@
+-------------- Drop if tables exist --------------
+DROP TABLE IF EXISTS OrderItem;
+DROP TABLE IF EXISTS DeliveryItem;
+DROP TABLE IF EXISTS Employee;
+DROP TABLE IF EXISTS Delivery;
+DROP TABLE IF EXISTS Orders; 
+DROP TABLE IF EXISTS Customer;
+DROP TABLE IF EXISTS Item; 
+DROP TABLE IF EXISTS Inventory;
+DROP TABLE IF EXISTS RawMaterials; 
+DROP TABLE IF EXISTS Supplier; 
+DROP TABLE IF EXISTS Store;
+
+
+-------------- Insert table statements --------------
+CREATE TABLE Customer
+(
+  customer_id int PRIMARY KEY,
+  first_name varchar(25),
+  last_name varchar(25),
+  phone_number char(12),
+  reward_points int
+);
+
+CREATE TABLE Store
+(
+  store_id int PRIMARY KEY,
+  st_number varchar(5),
+  street varchar(50),
+  city varchar(50),
+  us_state char(2),
+  zip_code char(5)
+);
+
+CREATE TABLE Item
+(
+  item_id int PRIMARY KEY,
+  item_name varchar(15),
+  item_size varchar(5),
+  unit_cost decimal(5, 2),
+  sell_price decimal(5, 2)
+);
+
+CREATE TABLE Supplier
+(
+  supplier_id int PRIMARY KEY,
+  sup_name varchar(30),
+  phone_number char(12)
+);
+
+CREATE TABLE Orders
+(
+  order_id int PRIMARY KEY,
+  order_date date,
+  payment_type varchar(15),
+  order_type varchar(15),
+  customer_id int,
+  store_id int,
+  FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+  FOREIGN KEY (store_id) REFERENCES Store(store_id)
+);
+
+CREATE TABLE OrderItem
+(
+  item_id int,
+  order_id int,
+  quantity int,
+  PRIMARY KEY (item_id, order_id),
+  FOREIGN KEY (item_id) REFERENCES Item(item_id),
+  FOREIGN KEY (order_id) REFERENCES Orders(order_id)
+);
+
+CREATE TABLE RawMaterials
+(
+  product_id int PRIMARY KEY,
+  mat_name varchar(100),
+  unit_cost decimal(5, 2)
+);
+
+CREATE TABLE Inventory
+(
+  product_id int,
+  store_id int,
+  quantity int,
+  PRIMARY KEY (product_id, store_id),
+  FOREIGN KEY (product_id) REFERENCES RawMaterials(product_id),
+  FOREIGN KEY (store_id) REFERENCES Store(store_id)
+);
+
+CREATE TABLE Delivery
+(
+  delivery_id int PRIMARY KEY,
+  store_id int,
+  supplier_id int,
+  del_date date,
+  FOREIGN KEY (store_id) REFERENCES Store(store_id),
+  FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
+);
+
+CREATE TABLE DeliveryItem
+(
+  delivery_id int,
+  product_id int,
+  quantity int,
+  PRIMARY KEY (delivery_id, product_id),
+  FOREIGN KEY (delivery_id) REFERENCES Delivery(delivery_id),
+  FOREIGN KEY (product_id) REFERENCES RawMaterials(product_id)
+);
+
+CREATE TABLE Employee
+(
+  employee_id int PRIMARY KEY,
+  first_name varchar(25),
+  last_name varchar(25),
+  phone_number char(12),
+  pay_rate money,
+  manager int,
+  store_id int,
+  FOREIGN KEY (manager) REFERENCES Employee(employee_id),
+  FOREIGN KEY (store_id) REFERENCES Store(store_id)
+);
+
+
+
+-------------- Populate tables --------------
+INSERT INTO Customer (customer_id, first_name, last_name, phone_number, reward_points) 
+VALUES 
+(010017, 'John', 'Rose', '617-555-3646', 0), 
+(002302, 'Jane', 'Baker', '415-555-0413', 75),
+(000118, null, null, null, null),
+(009640, 'Aubrey', 'Morgan', '617-555-1172', 25),
+(000546, 'Max', 'Alexander', '718-555-8755', 1050);
+
+INSERT INTO Store (store_id, st_number, street, city, us_state, zip_code)
+VALUES 
+(001, 04, 'Quincy Avenue', 'Boston', 'MA', 02115), 
+(002, 112, 'Main Street', 'Boston', 'MA', 02114), 
+(003, 4746, 'Washington Road', 'Cambridge', 'MA', 02115), 
+(004, 220, 'Huntington Avenue', 'Boston', 'MA', 02120);
+
+INSERT INTO Item (item_id, item_name, item_size, unit_cost, sell_price)
+VALUES 
+(001, 'Coffee', 'Small', 0.75, 1.50),
+(002, 'Latte', 'Small', 1.50, 3.00),
+(003, 'Mocha', 'Small', 1.75, 3.50),
+(004, 'Hot Chocolate', 'Small', 0.75, 2.50),
+(005, 'Chai Tea', 'Small', 1.25, 3.00),
+(006, 'Coffee', 'Large', 1.00, 1.75),
+(007, 'Latte', 'Large', 1.75, 3.50),
+(008, 'Mocha', 'Large', 2.00, 4.00),
+(009, 'Hot Chocolate', 'Large', 1.00, 3.00),
+(010, 'Chai Tea', 'Large', 1.50, 4.00),
+(028, 'Water Bottle', Null, 0.10, 1.00);
+
+INSERT INTO Supplier (supplier_id, sup_name, phone_number)
+VALUES 
+(001, 'Clover', '617-555-4377'),
+(002, 'Dasani', '617-555-0365'),
+(003, 'Domino', '617-555-1234'),
+(004, 'Hershey’s', '617-555-4529'),
+(005, 'Equator', '617-555-9093'),
+(006, 'Twinning’s', '617-555-9376');
+
+INSERT INTO Orders (order_id, order_date, payment_type, order_type, customer_id, store_id)
+VALUES 
+(00020312, '2019-12-29', 'debit', 'in-person', 009640, 003),
+(00542801, '2020-01-02', 'credit', 'online', 000546, 004),
+(00012438, '2020-01-08', 'cash', 'in-person', 002302, 002),
+(00445390, '2020-01-12', 'credit', 'online', 000546, 004),
+(00037577, '2020-01-15', 'cash', 'in-person', 000118, 001);
+
+INSERT INTO OrderItem 
+VALUES 
+(002, 00020312, 2),
+(028, 00542801, 1),
+(005, 00012438, 2),
+(001, 00445390, 1),
+(001, 00037577, 8),
+(006, 00542801, 2),
+(004, 00445390, 1);
+
+INSERT INTO RawMaterials 
+VALUES 
+(021, 'Clover Whole Milk', 4.00),
+(022, 'Equator Coffee Grounds', 7.00),
+(023, 'Hershey’s Cacao', 2.00),
+(024, 'Clover Half-and-Half', 2.00),
+(025, 'Twinning’s Chai Tea', 2.50),
+(026, 'Domino Sugar', 1.50),
+(027, 'Clover Whipped Cream', 1.50),
+(028, 'Dasani Water Bottle', 0.10);
+
+INSERT INTO Inventory 
+VALUES 
+(021, 001, 10),
+(022, 001, 23),
+(021, 002, 7),
+(025, 002, 11),
+(021, 003, 6),
+(022, 003, 50),
+(021, 004, 4),
+(022, 004, 26),
+(023, 004, 13),
+(028, 004, 112);
+
+INSERT INTO Delivery 
+VALUES 
+(0046, 001, 001, '2019-12-20'),
+(0110, 002, 006, '2019-12-23'),
+(0356, 003, 005, '2019-12-26'),
+(0212, 004, 002, '2019-12-28');
+
+INSERT INTO DeliveryItem 
+VALUES 
+(0046, 021, 10),
+(0110, 025, 200),
+(0356, 022, 50),
+(0212, 028, 240);
+
+INSERT INTO Employee 
+VALUES 
+(0016, 'Jennifer', 'Johnson', '617-555-8900', 35.00, Null, Null),
+(0101, 'Michael', 'Andrews', '617-555-7777', 12.00, 0101, 002),
+(0047, 'Kimberly', 'Paul', '617-555-4448', 18.00, 0016, 002),
+(0099, 'Michelle', 'Lowe', '617-555-8688', 18.00, 0016, 004),
+(0112, 'Charles', 'Robertson', '617-555-4321', 12.00, 0099, 004);
+
+
+-------------- Queries --------------
+
+
+---- Scenario 1a ----
+SELECT rm.product_id, i.quantity, rm.mat_name, rm.unit_cost
+FROM Inventory i
+JOIN RawMaterials rm ON rm.product_id = i.product_id
+WHERE store_id = 3
+
+
+---- Scenario 1b ----
+SELECT rm.product_id, rm.mat_name, sum(quantity)
+FROM RawMaterials rm
+JOIN Inventory i on i.product_id = rm.product_id
+GROUP BY rm.product_id
+HAVING sum(quantity) >= ALL ( SELECT sum(quantity)
+FROM RawMaterials rm 
+JOIN Inventory i 
+on i.product_id = rm.product_id 
+GROUP BY rm.product_id )
+
+
+---- Scenario 2a ----
+--Of the sample data, which order type is associated with anonymous
+--customers (no customer data is maintained for reward_points)
+SELECT o.order_type, count(c.customer_id) Number_of_Anonymous_Customers
+FROM Orders o
+JOIN Customer c on o.customer_id = c.customer_id
+JOIN OrderItem oi on o.order_id = oi.order_id
+GROUP BY c.customer_id, o.order_type
+HAVING c.customer_id in
+	(SELECT c.customer_id as non_null
+	FROM Orders o
+	JOIN Customer c on o.customer_id = c.customer_id
+	JOIN OrderItem oi on o.order_id = oi.order_id
+	WHERE c.reward_points is Null)
+
+
+---- Scenario 2b ----
+--Of the sample data, how much revenue was generated by in person 
+--sales and online sales, and what was the cost of goods sold for each
+SELECT o.order_type, sum(i.unit_cost) cogs, sum(i.sell_price) revenue
+FROM Orders o
+JOIN Customer c on o.customer_id = c.customer_id
+JOIN OrderItem oi on o.order_id = oi.order_id
+JOIN Item i on oi.item_id = i.item_id
+GROUP BY o.order_type
+
+
+---- Scenario 2c ----
+SELECT c.customer_id, c.first_name, c.last_name
+FROM Orders o
+JOIN Customer c on o.customer_id = c.customer_id
+LEFT JOIN 
+	(SELECT c.customer_id cust_id
+	FROM Orders o
+	JOIN Customer c on o.customer_id = c.customer_id
+	WHERE o.order_type = 'in-person') as X
+	ON c.customer_id = X.cust_id
+WHERE X.cust_id is Null
+GROUP BY c.customer_id
+
+
+---- Scenario 3a ----
+SELECT s.store_id, count(distinct o.order_id) numsales, 
+	count (distinct o.customer_id) as numcustomers
+FROM Store s
+JOIN Orders o on s.store_id = o.store_id
+JOIN OrderItem oi on oi.order_id = o.order_id
+JOIN Item i on oi.item_id = i.item_id
+GROUP BY s.store_id
+ORDER BY numsales desc
+
+
+---- Scenario 3b ----
+SELECT s.store_id, 
+	sum(oi.quantity*i.sell_price) as gross_rev,
+	sum(oi.quantity*i.unit_cost) as cogs,
+	sum(oi.quantity*i.sell_price - oi.quantity*i.unit_cost) as net_rev
+FROM Store s
+JOIN Orders o on s.store_id = o.store_id
+JOIN OrderItem oi on oi.order_id = o.order_id
+JOIN Item i on oi.item_id = i.item_id
+WHERE o.order_date > '2019-12-31'
+AND o.order_date < '2020-02-01' 
+GROUP BY s.store_id
+ORDER BY s.store_id
+
